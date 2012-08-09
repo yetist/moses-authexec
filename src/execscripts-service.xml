@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<node name="/">
+  <interface name="org.fmddlmyy.Test.Basic">
+    <method name="execscripts">
+       <arg name="username" type="s"/>
+       <arg name="scriptspath" type="s"/>
+       <arg name="ret" type="i" direction="out"/>
+    </method>
+  </interface>
+</node>
