@@ -56,7 +56,7 @@ struct TestObjClass
 
 G_DEFINE_TYPE(TestObj, test_obj, G_TYPE_OBJECT)
 
-gboolean test_obj_execscripts (TestObj *obj, char *username, char *path, int *ret, GError **error);
+gboolean test_obj_exec_scripts (TestObj *obj, char *username, char *path, int *ret, GError **error);
 
 #include "execscripts-service-glue.h"
 
@@ -68,7 +68,7 @@ static void test_obj_class_init (TestObjClass *klass)
 {
 }
 
-gboolean test_obj_execscripts (TestObj *obj, char *username, char *path, int *ret, GError **error)
+gboolean test_obj_exec_scripts (TestObj *obj, char *username, char *path, int *ret, GError **error)
 {
 	pid_t pid; 
 	int status;
@@ -78,7 +78,7 @@ gboolean test_obj_execscripts (TestObj *obj, char *username, char *path, int *re
 	else if (pid == 0)
 	{
 		sleep(1);
-		execl(path, NULL);
+		execl(path, path, NULL);
 	}
 	else
 	{
@@ -129,16 +129,16 @@ int main (int argc, char **argv)
 					 "org.freedesktop.DBus");
 
   if (!dbus_g_proxy_call (bus_proxy, "RequestName", &error,
-			  G_TYPE_STRING, "org.fmddlmyy.Test",
+			  G_TYPE_STRING, "org.isoft.ExecScripts",
 			  G_TYPE_UINT, 0,
 			  G_TYPE_INVALID,
 			  G_TYPE_UINT, &request_name_result,
 			  G_TYPE_INVALID))
-    lose_gerror ("Failed to acquire org.fmddlmyy.Test", error);
+    lose_gerror ("Failed to acquire org.isoft.ExecScripts", error);
 
   obj = g_object_new (TEST_TYPE_OBJECT, NULL);
 
-  dbus_g_connection_register_g_object (bus, "/TestObj", G_OBJECT (obj));
+  dbus_g_connection_register_g_object (bus, "/org/isoft/ExecScripts", G_OBJECT (obj));
 
   printf ("service running\n");
 

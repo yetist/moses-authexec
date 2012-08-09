@@ -9,9 +9,9 @@ LIBS = \
 	-ldbus-glib-1
 
 # execscripts-service
-noinst_PROGRAMS = execscripts-service
+bin_PROGRAMS = execscripts
 
-execscripts_service_SOURCES = execscripts-service.c
+execscripts_SOURCES = execscripts-service.c
 
 BUILT_SOURCES = execscripts-service-glue.h
 
@@ -22,6 +22,3 @@ CLEANFILES = $(BUILT_SOURCES)
 
 EXTRA_DIST = execscripts-service.xml 
 
-# execscripts-client
-noinst_PROGRAMS += execscripts-client
-execscripts_client_SOURCES= execscripts-client.c
