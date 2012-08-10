@@ -1,2 +1,2 @@
-SUBDIRS = src
-EXTRA_DIST = autogen.sh clean.sh
+SUBDIRS = src data
+EXTRA_DIST = autogen.sh 

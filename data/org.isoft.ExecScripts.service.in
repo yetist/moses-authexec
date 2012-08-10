@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.isoft.ExecScripts
+Exec=@BINDIR@/execscripts
+User=@PACKAGEKIT_USER@
