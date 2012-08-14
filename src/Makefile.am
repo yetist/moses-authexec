@@ -1,12 +1,14 @@
 INCLUDES = \
 	$(DBUS_CFLAGS)				\
 	$(DBUS_GLIB_CFLAGS)			\
+	-I/usr/include/polkit-1		\
 	-DDBUS_COMPILATION
 
 LIBS = \
 	$(DBUS_LIBS)				\
 	$(DBUS_GLIB_LIBS)			\
-	-ldbus-glib-1
+	-ldbus-glib-1				\
+	-lpolkit-gobject-1
 
 # execscripts-service
 bin_PROGRAMS = execscripts

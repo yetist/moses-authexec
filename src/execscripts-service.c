@@ -7,6 +7,95 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h> 
+#include <dbus/dbus.h>
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
+
+#include <polkit/polkit.h>
+#include <syslog.h>
+
+#define ACTION_ID "org.isoft.ExecScripts.ExecScripts"
+
+typedef struct
+{
+	GMainLoop *loop;
+	gboolean auth_ok;
+}AuthReturn;
+
+	static void
+check_authorization_cb (PolkitAuthority *authority,
+		GAsyncResult    *res,
+		AuthReturn *ar)
+{
+	GError *error;
+	PolkitAuthorizationResult *result;
+
+	ar->auth_ok = FALSE;
+	error = NULL;
+	result = polkit_authority_check_authorization_finish (authority, res, &error);
+	if (error != NULL)
+	{
+		g_print ("Error checking authorization: %s\n", error->message);
+		g_error_free (error);
+	}
+	else
+	{
+		const gchar *result_str;
+		if (polkit_authorization_result_get_is_authorized (result))
+		{
+			result_str = "authorized";
+			ar->auth_ok = TRUE;
+		}
+		else if (polkit_authorization_result_get_is_challenge (result))
+		{
+			result_str = "challenge";
+		}
+		else
+		{
+			result_str = "not authorized";
+		}
+
+		g_print ("Authorization result: %s\n", result_str);
+	}
+	g_main_loop_quit(ar->loop);
+}
+
+
+/*
+ * 检查认证
+ */
+
+	gboolean
+check_auth(const gchar *sender,const gchar *action_id)
+{
+	syslog(LOG_USER,"===========sender %s action_id %s============\n", sender, action_id);
+	PolkitSubject *subject;
+	PolkitAuthority *authority = NULL;
+	AuthReturn ar;
+
+	GCancellable *cancellable = NULL;
+	if(cancellable == NULL)
+		cancellable = g_cancellable_new  ();
+
+	ar.loop = g_main_loop_new(NULL,FALSE);
+	if(authority == NULL)
+		authority = polkit_authority_get ();
+	subject = polkit_system_bus_name_new(sender);
+	polkit_authority_check_authorization (authority,
+			subject,
+			action_id,
+			NULL, /* PolkitDetails */
+			POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
+			cancellable,
+			(GAsyncReadyCallback) check_authorization_cb,
+			&ar);
+
+	g_main_loop_run(ar.loop);
+	g_object_unref (authority);
+	g_object_unref (subject);
+	g_object_unref(cancellable);
+	return ar.auth_ok;
+}
 
 static void lose (const char *fmt, ...) G_GNUC_NORETURN G_GNUC_PRINTF (1, 2);
 static void lose_gerror (const char *prefix, GError *error) G_GNUC_NORETURN;
@@ -77,8 +166,12 @@ gboolean test_obj_exec_scripts (TestObj *obj, char *username, char *path, int *r
 		printf("Error  fork()!");
 	else if (pid == 0)
 	{
+		if (check_auth(username, ACTION_ID))
+		{
+		syslog(LOG_USER,"Check auth successfully\n");
 		sleep(1);
 		execl(path, path, NULL);
+		}
 	}
 	else
 	{
@@ -120,7 +213,7 @@ int main (int argc, char **argv)
 
   mainloop = g_main_loop_new (NULL, FALSE);
 
-  bus = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
+  bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
   if (!bus)
     lose_gerror ("Couldn't connect to session bus", error);
 

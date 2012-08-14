@@ -4,6 +4,7 @@ AM_CONFIG_HEADER(config.h)
 
 AC_PROG_CC
 
+AC_SUBST(SYSCONFDIR, $sysconfdir)
 AC_SUBST(DATADIR, $datadir)
 AC_SUBST(BINDIR, $bindir)
 
@@ -34,12 +35,21 @@ AM_CONDITIONAL(HAVE_GLIB, test x$have_glib = xyes)
 AC_SUBST(DBUS_GLIB_CFLAGS)
 AC_SUBST(DBUS_GLIB_LIBS)
 
+
 dnl ---------------------------------------------------------------------------
 dnl - Are we specifying a different dbus root ?
 dnl ---------------------------------------------------------------------------
-DBUS_SERVICES_DIR="$DATADIR/dbus-1/services"
+DBUS_SYS_DIR="$SYSCONFDIR/dbus-1/system.d"
+DBUS_SERVICES_DIR="$DATADIR/dbus-1/system-services"
+DBUS_POLICY_DIR="$DATADIR/polkit-1/actions"
+AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
+AC_SUBST(DBUS_POLICY_DIR)
 
+AC_CONFIG_FILES([data/org.isoft.ExecScripts.conf
+				 data/org.isoft.ExecScripts.policy
+				 ])
+AC_OUTPUT
 
 
 AC_OUTPUT([Makefile

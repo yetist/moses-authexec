@@ -5,13 +5,7 @@ make
 sudo make install
 
 自动启动服务配置:
-1、服务配置文件，文件如下：
-$ cat org.isoft.ExecScripts.service
-[D-BUS Service]
-Name=org.isoft.ExecScripts
-Exec=/usr/local/bin/execscripts
-把这个文件org.isoft.ExecScripts.service放到"/usr/share/dbus-1/services/"目录
-2、在客户请求一个服务，但该服务还没有启动时。dbus会根据service文件自动启动服务.客户用dbus-send请求服务命令：
- dbus-send --session --type=method_call --print-reply --dest=org.isoft.ExecScripts /org/isoft/ExecScripts org.isoft.ExecScripts.ExecScripts string:"ibox" string:"/home/ibox/ls.sh"
+在客户请求一个服务，但该服务还没有启动时。dbus会根据service文件自动启动服务.客户用dbus-send请求服务命令：
+ dbus-send --system --type=method_call --print-reply --dest=org.isoft.ExecScripts /org/isoft/ExecScripts org.isoft.ExecScripts.ExecScripts string:"ibox" string:"/home/ibox/ls.sh"
 
 	

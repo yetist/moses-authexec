@@ -1,5 +1,16 @@
 
-servicemaindir       = /usr/share/dbus-1/services/
+dbusdir = ${DBUS_SYS_DIR}
+dist_dbus_DATA =                    \
+									org.isoft.ExecScripts.conf         \
+									$(NULL)
+dbuspolicydir = ${DBUS_POLICY_DIR}
+dist_dbuspolicy_DATA =                    \
+									org.isoft.ExecScripts.policy         \
+									$(NULL)
+
+
+
+servicemaindir       = ${DBUS_SERVICES_DIR}
 servicemain_in_files = org.isoft.ExecScripts.service.in
 servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
 $(servicemain_DATA): $(servicemain_in_files) Makefile
