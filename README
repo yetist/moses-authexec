@@ -1,6 +1,6 @@
 安装:
 ./autogen.sh
-./configure
+./configure --sysconfdir=/etc
 make
 sudo make install
 
