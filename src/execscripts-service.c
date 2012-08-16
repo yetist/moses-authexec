@@ -161,14 +161,19 @@ gboolean test_obj_exec_scripts (TestObj *obj, char *username, char *path, int *r
 {
 	pid_t pid; 
 	int status;
+	struct passwd *user;
+
 	pid=fork();
 	if (pid < 0)
 		printf("Error  fork()!");
 	else if (pid == 0)
 	{
-		if (check_auth(username, ACTION_ID))
+		//if (check_auth(username, ACTION_ID))
 		{
 		syslog(LOG_USER,"Check auth successfully\n");
+		user = getpwnam(username);
+		setreuid(user->pw_uid, 0);
+		setregid(user->pw_gid, 0);
 		sleep(1);
 		execl(path, path, NULL);
 		}

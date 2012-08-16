@@ -24,7 +24,7 @@ PACKAGEKIT_USER=root
 AC_SUBST(PACKAGEKIT_USER)
 
 # Glib detection
-PKG_CHECK_MODULES(DBUS_GLIB, gobject-2.0 >= 2.6, have_glib=yes, have_glib=no)
+PKG_CHECK_MODULES(DBUS_GLIB, gobject-2.0 >= 2.6 gio-2.0, have_glib=yes, have_glib=no)
 
 if test x$have_glib = xno ; then
     AC_MSG_ERROR([GLib development libraries not found])
