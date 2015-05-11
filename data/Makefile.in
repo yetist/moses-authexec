@@ -142,9 +142,9 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(dbusdir)" "$(DESTDIR)$(policydir)" \
-	"$(DESTDIR)$(servicedir)"
-DATA = $(dbus_DATA) $(policy_DATA) $(service_DATA)
+am__installdirs = "$(DESTDIR)$(data_dbusdir)" \
+	"$(DESTDIR)$(data_policydir)" "$(DESTDIR)$(data_servicedir)"
+DATA = $(data_dbus_DATA) $(data_policy_DATA) $(data_service_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(srcdir)/org.moses.AuthExec.conf.in \
@@ -247,14 +247,24 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-dbusdir = $(sysconfdir)/dbus-1/system.d
-dbus_DATA = org.moses.AuthExec.conf
-policydir = $(datadir)/polkit-1/actions
-policy_DATA = org.moses.AuthExec.policy 
-servicedir = $(datadir)/dbus-1/system-services
-service_in_files = org.moses.AuthExec.service.in
-service_DATA = $(service_in_files:.service.in=.service)
-EXTRA_DIST = $(service_in_files) 
+data_dbusdir = $(sysconfdir)/dbus-1/system.d
+data_dbus_DATA = org.moses.AuthExec.conf
+data_policydir = $(datadir)/polkit-1/actions
+data_policy_DATA = org.moses.AuthExec.policy 
+data_servicedir = $(datadir)/dbus-1/system-services
+data_service_in_files = org.moses.AuthExec.service.in
+data_service_DATA = $(data_service_in_files:.service.in=.service)
+EXTRA_DIST = $(data_service_in_files) 
+CLEANFILES = \
+	$(data_dbus_DATA)		\
+	$(data_policy_DATA)		\
+	$(data_service_DATA)
+
+DISTCLEANFILES = \
+	$(data_dbus_DATA)		\
+	$(data_policy_DATA)		\
+	$(data_service_DATA)
+
 all: all-am
 
 .SUFFIXES:
@@ -291,69 +301,69 @@ org.moses.AuthExec.conf: $(top_builddir)/config.status $(srcdir)/org.moses.AuthE
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 org.moses.AuthExec.policy: $(top_builddir)/config.status $(srcdir)/org.moses.AuthExec.policy.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-install-dbusDATA: $(dbus_DATA)
+install-data_dbusDATA: $(data_dbus_DATA)
 	@$(NORMAL_INSTALL)
-	@list='$(dbus_DATA)'; test -n "$(dbusdir)" || list=; \
+	@list='$(data_dbus_DATA)'; test -n "$(data_dbusdir)" || list=; \
 	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(dbusdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(dbusdir)" || exit 1; \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(data_dbusdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(data_dbusdir)" || exit 1; \
 	fi; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(dbusdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(dbusdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(data_dbusdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(data_dbusdir)" || exit $$?; \
 	done
 
-uninstall-dbusDATA:
+uninstall-data_dbusDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(dbus_DATA)'; test -n "$(dbusdir)" || list=; \
+	@list='$(data_dbus_DATA)'; test -n "$(data_dbusdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(dbusdir)'; $(am__uninstall_files_from_dir)
-install-policyDATA: $(policy_DATA)
+	dir='$(DESTDIR)$(data_dbusdir)'; $(am__uninstall_files_from_dir)
+install-data_policyDATA: $(data_policy_DATA)
 	@$(NORMAL_INSTALL)
-	@list='$(policy_DATA)'; test -n "$(policydir)" || list=; \
+	@list='$(data_policy_DATA)'; test -n "$(data_policydir)" || list=; \
 	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(policydir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(policydir)" || exit 1; \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(data_policydir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(data_policydir)" || exit 1; \
 	fi; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(policydir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(policydir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(data_policydir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(data_policydir)" || exit $$?; \
 	done
 
-uninstall-policyDATA:
+uninstall-data_policyDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(policy_DATA)'; test -n "$(policydir)" || list=; \
+	@list='$(data_policy_DATA)'; test -n "$(data_policydir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(policydir)'; $(am__uninstall_files_from_dir)
-install-serviceDATA: $(service_DATA)
+	dir='$(DESTDIR)$(data_policydir)'; $(am__uninstall_files_from_dir)
+install-data_serviceDATA: $(data_service_DATA)
 	@$(NORMAL_INSTALL)
-	@list='$(service_DATA)'; test -n "$(servicedir)" || list=; \
+	@list='$(data_service_DATA)'; test -n "$(data_servicedir)" || list=; \
 	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(servicedir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(servicedir)" || exit 1; \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(data_servicedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(data_servicedir)" || exit 1; \
 	fi; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(servicedir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(servicedir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(data_servicedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(data_servicedir)" || exit $$?; \
 	done
 
-uninstall-serviceDATA:
+uninstall-data_serviceDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(service_DATA)'; test -n "$(servicedir)" || list=; \
+	@list='$(data_service_DATA)'; test -n "$(data_servicedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(servicedir)'; $(am__uninstall_files_from_dir)
+	dir='$(DESTDIR)$(data_servicedir)'; $(am__uninstall_files_from_dir)
 tags TAGS:
 
 ctags CTAGS:
@@ -395,7 +405,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(dbusdir)" "$(DESTDIR)$(policydir)" "$(DESTDIR)$(servicedir)"; do \
+	for dir in "$(DESTDIR)$(data_dbusdir)" "$(DESTDIR)$(data_policydir)" "$(DESTDIR)$(data_servicedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -420,10 +430,12 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -448,8 +460,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dbusDATA install-policyDATA \
-	install-serviceDATA
+install-data-am: install-data_dbusDATA install-data_policyDATA \
+	install-data_serviceDATA
 
 install-dvi: install-dvi-am
 
@@ -493,27 +505,28 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-dbusDATA uninstall-policyDATA \
-	uninstall-serviceDATA
+uninstall-am: uninstall-data_dbusDATA uninstall-data_policyDATA \
+	uninstall-data_serviceDATA
 
 .MAKE: install-am install-strip
 
 .PHONY: all all-am check check-am clean clean-generic cscopelist-am \
 	ctags-am distclean distclean-generic distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
-	install-data-am install-dbusDATA install-dvi install-dvi-am \
+	install-data-am install-data_dbusDATA install-data_policyDATA \
+	install-data_serviceDATA install-dvi install-dvi-am \
 	install-exec install-exec-am install-html install-html-am \
 	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-policyDATA install-ps install-ps-am \
-	install-serviceDATA install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am tags-am \
-	uninstall uninstall-am uninstall-dbusDATA uninstall-policyDATA \
-	uninstall-serviceDATA
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
+	pdf-am ps ps-am tags-am uninstall uninstall-am \
+	uninstall-data_dbusDATA uninstall-data_policyDATA \
+	uninstall-data_serviceDATA
 
 .PRECIOUS: Makefile
 
-$(service_DATA): $(service_in_files) Makefile
+$(data_service_DATA): $(data_service_in_files) Makefile
 	    @sed -e "s|\@bindir\@|$(bindir)|" -e "s|\@AUTHEXEC_USER\@|$(AUTHEXEC_USER)|" $< > $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

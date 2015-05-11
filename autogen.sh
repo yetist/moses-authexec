@@ -1,7 +1,5 @@
-#! /bin/sh
-touch `find .`
 aclocal
-autoconf
 autoheader
-touch NEWS README AUTHORS ChangeLog
-automake  -a -c
+autoconf
+automake -a -c
+./configure --enable-maintainer-mode --prefix=/usr

@@ -50,37 +50,39 @@ gint run_exec_script(const gchar* username, const gchar* scriptname, GError **er
 	gchar *scriptpath;
 	gchar *kfilepath;
 	GKeyFile *keyfile;
+	gsize len;
+	gchar **allows;
+	gint ret = 0;
 
 	if ((user = getpwnam(username)) == NULL) {
 		g_set_error(error, g_quark_from_string("AuthExec"), 3, "%s", "No such user.");
-		return 4;
+		ret = 7;
+		goto out0;
 	}
 
 	scriptpath = g_build_filename(AUTH_EXEC_CONF_DIR, "exec.d", scriptname, NULL);
-	g_print("file=%s\n", scriptpath);
 	if (! g_file_test(scriptpath, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_IS_EXECUTABLE | G_FILE_TEST_EXISTS))
 	{
 		g_set_error(error, g_quark_from_string("AuthExec"), 3, "%s", "No such script or script is not executable.");
-		g_free(scriptpath);
-		return 3;
+		ret = 6;
+		goto out1;
 	}
 
 	kfilepath = g_build_filename(AUTH_EXEC_CONF_DIR, "authexecd.conf", NULL);
 	if (! g_file_test(kfilepath, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS))
 	{
 		g_set_error(error, g_quark_from_string("AuthExec"), 3, "%s", "No config file for authexecd.");
-		g_free(kfilepath);
-		return 2;
+		ret = 5;
+		goto out2;
 	}
 
 	keyfile = g_key_file_new ();
 	if (!g_key_file_load_from_file (keyfile, kfilepath, G_KEY_FILE_NONE, error))
 	{
-		return 1;
+		ret = 4;
+		goto out3;
 	}
 
-	gsize len;
-	gchar **allows;
 	if (g_key_file_has_group (keyfile, scriptname))
 	{
 		allows = g_key_file_get_string_list (keyfile, scriptname, "allow", &len, error);
@@ -88,43 +90,53 @@ gint run_exec_script(const gchar* username, const gchar* scriptname, GError **er
 		allows = g_key_file_get_string_list (keyfile, "default", "allow", &len, error);
 	}
 
-	if (allows == NULL)
-		return 1;
+	if (allows == NULL) {
+		ret = 3;
+		goto out3;
+	}
 
 	if (! g_strv_contains ((const gchar * const*)allows, username))
 	{
 		g_set_error(error, g_quark_from_string("AuthExec"), 3, "%s", "user can not to run the script.");
-		return 1;
+		ret = 2;
+		goto out4;
 	}
-	g_print("username=%s, path=%s\n", username, scriptpath);
 	pid_t pid;
 	pid=fork();
 	if (pid < 0) {
 		g_set_error(error, g_quark_from_string("AuthExec"), 3, "%s", "call script get error.");
-		return 1;
-	} else if (pid == 0)
-	{
+		ret = 1;
+		goto out4;
+	} else if (pid == 0) {
 		setreuid(user->pw_uid, 0);
 		setregid(user->pw_gid, 0);
 		execl(scriptpath, scriptpath, NULL);
-	}
-	else
-	{
+	} else {
 		int status;
 		waitpid(pid, &status, 0);
 		if (WIFEXITED(status)) {
 			printf("child exited normal exit status=%d\n", WEXITSTATUS(status));
-			return WEXITSTATUS(status);
+			ret = WEXITSTATUS(status);
 		} else if (WIFSIGNALED(status)) {
 			printf("child exited abnormal signal number=%d\n", WTERMSIG(status));
-			return WTERMSIG(status);
+			ret = WTERMSIG(status);
 		} else if (WIFSTOPPED(status)) {
 			printf("child stopped signal number=%d\n", WSTOPSIG(status));
-			return WSTOPSIG(status);
+			ret = WSTOPSIG(status);
 		}
 
 	}
-	return 0;
+
+out4:
+	g_strfreev(allows);
+out3:
+	g_key_file_free(keyfile);
+out2:
+	g_free(kfilepath);
+out1:
+	g_free(scriptpath);
+out0:
+	return ret;
 }
 
 gboolean handle_run(MosesAuthExec *object, GDBusMethodInvocation *invocation, const gchar *arg_username, const gchar *arg_scriptspath)

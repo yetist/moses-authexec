@@ -292,13 +292,12 @@ psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 srcdir = .
-sysconfdir = /etc
+sysconfdir = ${prefix}/etc
 target_alias = 
 top_build_prefix = 
 top_builddir = .
 top_srcdir = .
 SUBDIRS = src data exec.d
-EXTRA_DIST = autogen.sh 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
