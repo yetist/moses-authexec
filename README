@@ -7,4 +7,4 @@ sudo make install
 自动启动服务配置:
 在客户请求一个服务，但该服务还没有启动时。dbus会根据service文件自动启动服务.客户用dbus-send请求服务命令：
 
-dbus-send --system --type=method_call --print-reply --dest=org.moses.AuthExec /org/moses/AuthExec org.moses.AuthExec.ExecScript string:"xbmc" string:"upweb.sh"
+dbus-send --system --type=method_call --print-reply --dest=org.moses.AuthExec /org/moses/AuthExec org.moses.AuthExec.Run string:"xbmc" string:"demo.sh"
