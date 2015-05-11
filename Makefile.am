@@ -1,2 +1,2 @@
-SUBDIRS = src data
+SUBDIRS = src data exec.d
 EXTRA_DIST = autogen.sh 

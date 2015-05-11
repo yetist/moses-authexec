@@ -1,4 +1,0 @@
-[D-BUS Service]
-Name=org.isoft.ExecScripts
-Exec=/usr/bin/execscripts
-User=root

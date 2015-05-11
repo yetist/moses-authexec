@@ -9,17 +9,17 @@
        for the PackageKit to work. -->
 
   <!-- Only user @PACKAGEKIT_USER@ can own the PackageKit service -->
-  <policy user="@PACKAGEKIT_USER@">
-    <allow own="org.isoft.ExecScripts"/>
+  <policy user="@AUTHEXEC_USER@">
+    <allow own="org.moses.AuthExec"/>
   </policy>
 
  <!-- Allow anyone to call into the service - we'll reject callers using PolicyKit -->
   <policy context="default">
-    <allow send_destination="org.isoft.ExecScripts"
-           send_interface="org.isoft.ExecScripts"/>
-    <allow send_destination="org.isoft.ExecScripts"
+    <allow send_destination="org.moses.AuthExec"
+           send_interface="org.moses.AuthExec"/>
+    <allow send_destination="org.moses.AuthExec"
            send_interface="org.freedesktop.DBus.Properties"/>
-    <allow send_destination="org.isoft.ExecScripts"
+    <allow send_destination="org.moses.AuthExec"
            send_interface="org.freedesktop.DBus.Introspectable"/>
   </policy>
 

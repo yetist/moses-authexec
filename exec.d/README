@@ -1,0 +1,4 @@
+- you can write new script file in exec.d, add execute permission.
+- modify authexecd.conf, add user to allow entry.
+- send dbus message like this:
+dbus-send --system --type=method_call --print-reply --dest=org.moses.AuthExec /org/moses/AuthExec org.moses.AuthExec.Run string:"xbmc" string:"upweb.sh"

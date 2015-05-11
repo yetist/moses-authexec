@@ -4,10 +4,10 @@
  "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
 <policyconfig>
 
-  <vendor>Test Application Use polikit</vendor>
-  <vendor_url>http://fedoraproject.org/example</vendor_url>
+  <vendor>Run script by another user</vendor>
+  <vendor_url>http://moses.zhcn.cc/authexec</vendor_url>
 
-   <action id="org.isoft.ExecScripts.ExecScripts">
+   <action id="org.moses.AuthExec.Run">
     <description>Exec Scripts</description>
     <message>Exec shell Scripts</message>
     <defaults>

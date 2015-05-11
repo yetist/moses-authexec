@@ -1,19 +1,13 @@
+dbusdir = $(sysconfdir)/dbus-1/system.d
+dbus_DATA = org.moses.AuthExec.conf
 
-dbusdir = ${DBUS_SYS_DIR}
-dist_dbus_DATA =                    \
-									org.isoft.ExecScripts.conf         \
-									$(NULL)
-dbuspolicydir = ${DBUS_POLICY_DIR}
-dist_dbuspolicy_DATA =                    \
-									org.isoft.ExecScripts.policy         \
-									$(NULL)
+policydir = $(datadir)/polkit-1/actions
+policy_DATA =  org.moses.AuthExec.policy 
 
+servicedir = $(datadir)/dbus-1/system-services
+service_in_files = org.moses.AuthExec.service.in
+service_DATA     = $(service_in_files:.service.in=.service)
+$(service_DATA): $(service_in_files) Makefile
+	    @sed -e "s|\@bindir\@|$(bindir)|" -e "s|\@AUTHEXEC_USER\@|$(AUTHEXEC_USER)|" $< > $@
 
-
-servicemaindir       = ${DBUS_SERVICES_DIR}
-servicemain_in_files = org.isoft.ExecScripts.service.in
-servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
-$(servicemain_DATA): $(servicemain_in_files) Makefile
-	    @sed -e "s|\@BINDIR\@|$(BINDIR)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
-
-EXTRA_DIST =	$(servicemain_in_files) 
+EXTRA_DIST = $(service_in_files) 

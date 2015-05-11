@@ -1,26 +1,36 @@
-INCLUDES = \
-	$(DBUS_CFLAGS)				\
-	$(DBUS_GLIB_CFLAGS)			\
-	-I/usr/include/polkit-1		\
-	-DDBUS_COMPILATION
+NULL =
+bin_PROGRAMS = authexecd
 
-LIBS = \
-	$(DBUS_LIBS)				\
-	$(DBUS_GLIB_LIBS)			\
-	-ldbus-glib-1				\
-	-lpolkit-gobject-1
+common_CFLAGS = 	\
+	-Wall		\
+	-DAUTH_EXEC_CONF_DIR=\""$(sysconfdir)/authexec"\"
 
-# execscripts-service
-bin_PROGRAMS = execscripts
+authexecd_CFLAGS =	\
+	$(common_CFLAGS)	\
+	$(GIO_CFLAGS)
 
-execscripts_SOURCES = execscripts-service.c
+authexecd_LDADD =	\
+	$(GIO_LIBS) 
 
-BUILT_SOURCES = execscripts-service-glue.h
+authexecd_SOURCES =	\
+	$(authexec_built_sources)	\
+	main.c	\
+	$(NULL)
 
-execscripts-service-glue.h: execscripts-service.xml
-	$(LIBTOOL) --mode=execute dbus-binding-tool --prefix=test_obj --mode=glib-server --output=execscripts-service-glue.h $(srcdir)/execscripts-service.xml
+authexec_built_sources =	\
+	moses-authexec-generated.h	\
+	moses-authexec-generated.c	\
+	$(NULL)
 
-CLEANFILES = $(BUILT_SOURCES)
+$(authexec_built_sources) : Makefile.am $(srcdir)/org.moses.authexec.xml
+	$(AM_V_GEN) gdbus-codegen \
+	 	--interface-prefix org.moses. \
+		--c-namespace Moses \
+		--generate-c-code moses-authexec-generated \
+		$(srcdir)/org.moses.authexec.xml
 
-EXTRA_DIST = execscripts-service.xml 
+EXTRA_DIST = 			\
+	org.moses.authexec.xml	\
+	$(NULL)
 
+-include $(top_srcdir)/git.mk

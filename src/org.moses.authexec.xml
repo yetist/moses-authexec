@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<node name="/">
+  <interface name="org.moses.AuthExec">
+    <method name="Run">
+       <arg name="username" type="s"/>
+       <arg name="scriptname" type="s"/>
+       <arg name="ret" type="i" direction="out"/>
+       <arg name="info" type="s" direction="out"/>
+    </method>
+  </interface>
+</node>

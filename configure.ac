@@ -1,40 +1,24 @@
-AC_INIT()
-AM_INIT_AUTOMAKE(hello-dbus3, 0.1)
-AM_CONFIG_HEADER(config.h)
+AC_PREREQ([2.69])
+AC_INIT(moses-iplocation, 0.0.2, http://bugs.isoft-linux.org)
+AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz tar-ustar])
+AC_CONFIG_SRCDIR([src/main.c])
+AC_CONFIG_HEADERS([config.h])
 
+AM_MAINTAINER_MODE([enable])
+AM_SILENT_RULES([yes])
+
+# Checks for programs.
 AC_PROG_CC
+AC_PROG_INSTALL
 
-AC_SUBST(SYSCONFDIR, $sysconfdir)
-AC_SUBST(DATADIR, $datadir)
-AC_SUBST(BINDIR, $bindir)
+# Checks for header files.
+AC_CHECK_HEADERS([inttypes.h string.h])
 
+GIO_REQUIRED=2.35.0
+PKG_CHECK_MODULES(GIO, gio-unix-2.0 >= $GIO_REQUIRED)
 
-# Dbus detection
-PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.1, have_dbus=yes, have_dbus=no)
-
-if test x$have_dbus = xno ; then
-    AC_MSG_ERROR([DBus development libraries not found])
-fi
-AM_CONDITIONAL(HAVE_DBUS, test x$have_dbus = xyes)
-
-AC_SUBST(DBUS_CFLAGS)
-AC_SUBST(DBUS_LIBS)
-
-PACKAGEKIT_USER=root
-AC_SUBST(PACKAGEKIT_USER)
-
-# Glib detection
-PKG_CHECK_MODULES(DBUS_GLIB, gobject-2.0 >= 2.6 gio-2.0, have_glib=yes, have_glib=no)
-
-if test x$have_glib = xno ; then
-    AC_MSG_ERROR([GLib development libraries not found])
-fi
-
-AM_CONDITIONAL(HAVE_GLIB, test x$have_glib = xyes)
-
-AC_SUBST(DBUS_GLIB_CFLAGS)
-AC_SUBST(DBUS_GLIB_LIBS)
-
+AUTHEXEC_USER=root
+AC_SUBST(AUTHEXEC_USER)
 
 dnl ---------------------------------------------------------------------------
 dnl - Are we specifying a different dbus root ?
@@ -46,12 +30,13 @@ AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
 AC_SUBST(DBUS_POLICY_DIR)
 
-AC_CONFIG_FILES([data/org.isoft.ExecScripts.conf
-				 data/org.isoft.ExecScripts.policy
-				 ])
+AC_CONFIG_FILES([
+Makefile
+src/Makefile
+data/Makefile
+data/org.moses.AuthExec.conf
+data/org.moses.AuthExec.policy
+exec.d/Makefile
+])
+
 AC_OUTPUT
-
-
-AC_OUTPUT([Makefile
-		   data/Makefile
-           src/Makefile])

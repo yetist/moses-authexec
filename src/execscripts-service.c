@@ -100,25 +100,25 @@ check_auth(const gchar *sender,const gchar *action_id)
 static void lose (const char *fmt, ...) G_GNUC_NORETURN G_GNUC_PRINTF (1, 2);
 static void lose_gerror (const char *prefix, GError *error) G_GNUC_NORETURN;
 
-static void
+	static void
 lose (const char *str, ...)
 {
-  va_list args;
+	va_list args;
 
-  va_start (args, str);
+	va_start (args, str);
 
-  vfprintf (stderr, str, args);
-  fputc ('\n', stderr);
+	vfprintf (stderr, str, args);
+	fputc ('\n', stderr);
 
-  va_end (args);
+	va_end (args);
 
-  exit (1);
+	exit (1);
 }
 
-static void
+	static void
 lose_gerror (const char *prefix, GError *error) 
 {
-  lose ("%s: %s", prefix, error->message);
+	lose ("%s: %s", prefix, error->message);
 }
 
 typedef struct TestObj TestObj;
@@ -128,12 +128,12 @@ GType test_obj_get_type (void);
 
 struct TestObj
 {
-  GObject parent;
+	GObject parent;
 };
 
 struct TestObjClass
 {
-  GObjectClass parent;
+	GObjectClass parent;
 };
 
 #define TEST_TYPE_OBJECT              (test_obj_get_type ())
@@ -159,24 +159,27 @@ static void test_obj_class_init (TestObjClass *klass)
 
 gboolean test_obj_exec_scripts (TestObj *obj, char *username, char *path, int *ret, GError **error)
 {
-	pid_t pid; 
+	pid_t pid;
 	int status;
 	struct passwd *user;
+
+	if ((user = getpwnam(username)) == NULL) {
+		g_set_error(error, g_quark_from_string("ExecScripts"), 3, "%s", "No such user.");
+		*ret=4;
+		return FALSE;
+	}
 
 	pid=fork();
 	if (pid < 0)
 		printf("Error  fork()!");
 	else if (pid == 0)
 	{
-		//if (check_auth(username, ACTION_ID))
-		{
 		syslog(LOG_USER,"Check auth successfully\n");
 		user = getpwnam(username);
 		setreuid(user->pw_uid, 0);
 		setregid(user->pw_gid, 0);
 		sleep(1);
 		execl(path, path, NULL);
-		}
 	}
 	else
 	{
@@ -192,55 +195,55 @@ gboolean test_obj_exec_scripts (TestObj *obj, char *username, char *path, int *r
 		}
 		*ret = WEXITSTATUS(status);
 	}
-  return TRUE;
+	return TRUE;
 }
 
 int main (int argc, char **argv)
 {
-  DBusGConnection *bus;
-  DBusGProxy *bus_proxy;
-  GError *error = NULL;
-  TestObj *obj;
-  GMainLoop *mainloop;
-  guint request_name_result;
+	DBusGConnection *bus;
+	DBusGProxy *bus_proxy;
+	GError *error = NULL;
+	TestObj *obj;
+	GMainLoop *mainloop;
+	guint request_name_result;
 
-  g_type_init ();
+	g_type_init ();
 
-  {
-    GLogLevelFlags fatal_mask;
-    
-    fatal_mask = g_log_set_always_fatal (G_LOG_FATAL_MASK);
-    fatal_mask |= G_LOG_LEVEL_WARNING | G_LOG_LEVEL_CRITICAL;
-    g_log_set_always_fatal (fatal_mask);
-  }
-  
-  dbus_g_object_type_install_info (TEST_TYPE_OBJECT, &dbus_glib_test_obj_object_info);
+	{
+		GLogLevelFlags fatal_mask;
 
-  mainloop = g_main_loop_new (NULL, FALSE);
+		fatal_mask = g_log_set_always_fatal (G_LOG_FATAL_MASK);
+		fatal_mask |= G_LOG_LEVEL_WARNING | G_LOG_LEVEL_CRITICAL;
+		g_log_set_always_fatal (fatal_mask);
+	}
 
-  bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-  if (!bus)
-    lose_gerror ("Couldn't connect to session bus", error);
+	dbus_g_object_type_install_info (TEST_TYPE_OBJECT, &dbus_glib_test_obj_object_info);
 
-  bus_proxy = dbus_g_proxy_new_for_name (bus, "org.freedesktop.DBus",
-					 "/org/freedesktop/DBus",
-					 "org.freedesktop.DBus");
+	mainloop = g_main_loop_new (NULL, FALSE);
 
-  if (!dbus_g_proxy_call (bus_proxy, "RequestName", &error,
-			  G_TYPE_STRING, "org.isoft.ExecScripts",
-			  G_TYPE_UINT, 0,
-			  G_TYPE_INVALID,
-			  G_TYPE_UINT, &request_name_result,
-			  G_TYPE_INVALID))
-    lose_gerror ("Failed to acquire org.isoft.ExecScripts", error);
+	bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+	if (!bus)
+		lose_gerror ("Couldn't connect to system bus", error);
 
-  obj = g_object_new (TEST_TYPE_OBJECT, NULL);
+	bus_proxy = dbus_g_proxy_new_for_name (bus, "org.freedesktop.DBus",
+			"/org/freedesktop/DBus",
+			"org.freedesktop.DBus");
 
-  dbus_g_connection_register_g_object (bus, "/org/isoft/ExecScripts", G_OBJECT (obj));
+	if (!dbus_g_proxy_call (bus_proxy, "RequestName", &error,
+				G_TYPE_STRING, "org.isoft.ExecScripts",
+				G_TYPE_UINT, 0,
+				G_TYPE_INVALID,
+				G_TYPE_UINT, &request_name_result,
+				G_TYPE_INVALID))
+		lose_gerror ("Failed to acquire org.isoft.ExecScripts", error);
 
-  printf ("service running\n");
+	obj = g_object_new (TEST_TYPE_OBJECT, NULL);
 
-  g_main_loop_run (mainloop);
+	dbus_g_connection_register_g_object (bus, "/org/isoft/ExecScripts", G_OBJECT (obj));
 
-  exit (0);
+	printf ("service running\n");
+
+	g_main_loop_run (mainloop);
+
+	exit (0);
 }
