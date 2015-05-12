@@ -1,10 +1,29 @@
-安装:
+authexec
+==========
+
+这是一个dbus系统服务，可以通过发送用户名和脚本名称，允许以不同的用户来执行特定的脚本。
+
+通过和git hook结合，可以在git push之后，自动更新和配置网站服务器。
+
+安装
+======
+
 ./autogen.sh
 ./configure --prefix=/usr --sysconfdir=/etc
 make
 sudo make install
 
-自动启动服务配置:
-在客户请求一个服务，但该服务还没有启动时。dbus会根据service文件自动启动服务.客户用dbus-send请求服务命令：
+命令
+=====
 
-dbus-send --system --type=method_call --print-reply --dest=org.moses.AuthExec /org/moses/AuthExec org.moses.AuthExec.Run string:"xbmc" string:"demo.sh"
+authexec <用户名> <脚本名称>
+
+脚本位置：
+
+/etc/authexec/exec.d/
+
+配置文件：
+
+/etc/authexec/authexecd.conf
+
+可设置允许执行特定脚本的用户信息。
