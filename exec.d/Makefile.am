@@ -5,3 +5,5 @@ data_execdir = $(sysconfdir)/authexec/exec.d
 dist_data_exec_SCRIPTS = demo.sh
 
 EXTRA_DIST = $(data_conf_DATA) 
+
+-include $(top_srcdir)/git.mk

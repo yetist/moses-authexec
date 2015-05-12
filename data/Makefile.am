@@ -21,3 +21,5 @@ DISTCLEANFILES = 			\
 	$(data_dbus_DATA)		\
 	$(data_policy_DATA)		\
 	$(data_service_DATA)
+
+-include $(top_srcdir)/git.mk
