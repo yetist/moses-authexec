@@ -44,6 +44,45 @@ static void on_name_lost (GDBusConnection *connection, const gchar *name, gpoint
 	g_debug("Lost the name %s\n", name);
 }
 
+void g_strv_print(gchar **src_array)
+{
+	guint i = 0;
+	if (src_array != NULL) {
+		while (src_array[i])
+		{
+			g_print("[%d]:%s\n", i, src_array[i]);
+			++i;
+		}
+	} else {
+		g_print("array is null\n");
+	}
+}
+
+
+gchar** g_strv_cat(gchar **dest_array, gchar **src_array)
+{
+	guint i = 0, len;
+
+	len = dest_array ? g_strv_length (dest_array) : 0;
+
+	if (src_array != NULL)
+		i = len + g_strv_length (src_array);
+
+	dest_array = g_renew (gchar*, dest_array, i + 1);
+
+	if (src_array != NULL) {
+		i = 0;
+		while (src_array[i])
+		{
+			dest_array[len] = g_strdup (src_array[i]);
+			++i;
+			++len;
+		}
+	}
+	dest_array[len] = NULL;
+	return dest_array;
+}
+
 gint run_exec_script(const gchar* username, const gchar* scriptname, GError **error)
 {
 	struct passwd *user;
@@ -51,7 +90,7 @@ gint run_exec_script(const gchar* username, const gchar* scriptname, GError **er
 	gchar *kfilepath;
 	GKeyFile *keyfile;
 	gsize len;
-	gchar **allows;
+	gchar **allows = NULL;
 	gint ret = 0;
 
 	if ((user = getpwnam(username)) == NULL) {
@@ -79,18 +118,30 @@ gint run_exec_script(const gchar* username, const gchar* scriptname, GError **er
 	keyfile = g_key_file_new ();
 	if (!g_key_file_load_from_file (keyfile, kfilepath, G_KEY_FILE_NONE, error))
 	{
+		g_set_error(error, g_quark_from_string("AuthExec"), 3, "can not load \"%s\" file.", kfilepath);
 		ret = 4;
 		goto out3;
 	}
 
+
+	if (g_key_file_has_group (keyfile, "default"))
+	{
+		gchar **default_allows = NULL;
+		default_allows = g_key_file_get_string_list (keyfile, "default", "allow", &len, error);
+		allows = g_strv_cat(allows, default_allows);
+		g_strfreev(default_allows);
+	}
+
 	if (g_key_file_has_group (keyfile, scriptname))
 	{
-		allows = g_key_file_get_string_list (keyfile, scriptname, "allow", &len, error);
-	} else {
-		allows = g_key_file_get_string_list (keyfile, "default", "allow", &len, error);
+		gchar **section_allows;
+		section_allows = g_key_file_get_string_list (keyfile, scriptname, "allow", &len, error);
+		allows = g_strv_cat(allows, section_allows);
+		g_strfreev(section_allows);
 	}
 
 	if (allows == NULL) {
+		g_set_error(error, g_quark_from_string("AuthExec"), 3, "%s", "user can not to run the script.");
 		ret = 3;
 		goto out3;
 	}
