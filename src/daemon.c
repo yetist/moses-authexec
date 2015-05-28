@@ -146,7 +146,8 @@ gint run_exec_script(const gchar* username, const gchar* scriptname, GError **er
 		goto out3;
 	}
 
-	if (! g_strv_contains ((const gchar * const*)allows, username))
+	g_strv_print(allows);
+	if (!(g_strv_contains ((const gchar * const*)allows, "*") || g_strv_contains ((const gchar * const*)allows, username)))
 	{
 		g_set_error(error, g_quark_from_string("AuthExec"), 3, "%s", "user can not to run the script.");
 		ret = 2;
