@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.moses.AuthExec
-Exec=@bindir@/authexecd
+Exec=@bindir@/moses-authexecd
 User=@AUTHEXEC_USER@

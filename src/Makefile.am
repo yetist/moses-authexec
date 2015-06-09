@@ -1,22 +1,21 @@
 NULL =
-bin_PROGRAMS = authexec authexecd
+bin_PROGRAMS = moses-authexec moses-authexecd
 
 common_CFLAGS = 	\
 	-Wall		\
 	-DAUTH_EXEC_CONF_DIR=\""$(sysconfdir)/authexec"\"
 
-authexec_CFLAGS = -Wall $(GIO_CFLAGS)
-authexec_LDADD = $(GIO_LIBS) 
-authexec_SOURCES = $(authexec_built_sources) authexec.c
-
-authexecd_CFLAGS =	\
+moses_authexec_CFLAGS = -Wall $(GIO_CFLAGS)
+moses_authexec_LDADD = $(GIO_LIBS) 
+moses_authexec_SOURCES = $(authexec_built_sources) authexec.c
+moses_authexecd_CFLAGS =	\
 	$(common_CFLAGS)	\
 	$(GIO_CFLAGS)
 
-authexecd_LDADD =	\
+moses_authexecd_LDADD =	\
 	$(GIO_LIBS) 
 
-authexecd_SOURCES =	\
+moses_authexecd_SOURCES =	\
 	$(authexec_built_sources)	\
 	daemon.c	\
 	$(NULL)
