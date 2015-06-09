@@ -191,6 +191,68 @@ out0:
 	return ret;
 }
 
+GVariant* get_script_allows(const gchar* scriptname)
+{
+	gchar* kfilepath;
+	GKeyFile *keyfile;
+	GVariantBuilder *builder;
+	GVariant *value;
+	gchar **allows = NULL;
+	gsize len;
+
+	builder = g_variant_builder_new (G_VARIANT_TYPE ("as"));
+
+	kfilepath = g_build_filename(AUTH_EXEC_CONF_DIR, "authexecd.conf", NULL);
+	if (! g_file_test(kfilepath, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS))
+	{
+		g_free(kfilepath);
+		goto end;
+	}
+
+	keyfile = g_key_file_new ();
+	if (!g_key_file_load_from_file (keyfile, kfilepath, G_KEY_FILE_NONE, NULL))
+	{
+		g_free(kfilepath);
+		g_key_file_free(keyfile);
+		goto end;
+	}
+	g_free(kfilepath);
+
+	if (g_key_file_has_group (keyfile, "default"))
+	{
+		gchar **default_allows = NULL;
+		default_allows = g_key_file_get_string_list (keyfile, "default", "allow", &len, NULL);
+		allows = g_strv_cat(allows, default_allows);
+		g_strfreev(default_allows);
+	}
+
+	if (g_key_file_has_group (keyfile, scriptname))
+	{
+		gchar **section_allows;
+		section_allows = g_key_file_get_string_list (keyfile, scriptname, "allow", &len, NULL);
+		allows = g_strv_cat(allows, section_allows);
+		g_strfreev(section_allows);
+	}
+	g_key_file_free(keyfile);
+end:
+	if (allows == NULL) {
+		g_variant_builder_add (builder, "s", "");
+	} else {
+		guint i = 0;
+		while (allows[i])
+		{
+			g_variant_builder_add (builder, "s", allows[i]);
+			++i;
+		}
+	}
+	g_strfreev(allows);
+	value = g_variant_new ("as", builder);
+	g_variant_builder_unref (builder);
+	g_print("%s\n", g_variant_print(value, TRUE));
+	return value;
+}
+
+
 gboolean handle_run(MosesAuthExec *object, GDBusMethodInvocation *invocation, const gchar *arg_username, const gchar *arg_scriptspath)
 {
 	gint ret;
@@ -203,6 +265,39 @@ gboolean handle_run(MosesAuthExec *object, GDBusMethodInvocation *invocation, co
 		moses_auth_exec_complete_run(object, invocation, ret, error->message);
 		g_error_free(error);
 	}
+	return TRUE;
+}
+
+GVariant* get_script_list(void)
+{
+	gchar *execd;
+	GVariant *dict;
+	GVariantBuilder *build;
+
+	build = g_variant_builder_new (G_VARIANT_TYPE ("a{sv}"));
+	execd = g_build_filename(AUTH_EXEC_CONF_DIR, "exec.d", NULL);
+	if (g_file_test(execd, G_FILE_TEST_IS_DIR)) {
+		GDir *dir;
+		const gchar *ename;
+		GVariant *allow;
+
+		dir = g_dir_open (execd, 0, NULL);
+		while ((ename = g_dir_read_name (dir)) != NULL) {
+			allow = get_script_allows(ename);
+			g_variant_builder_add (build, "{sv}", ename, allow);
+		}
+		g_dir_close(dir);
+	}
+	g_free(execd);
+	dict = g_variant_builder_end (build);
+	return dict;
+}
+
+gboolean handle_list(MosesAuthExec *object, GDBusMethodInvocation *invocation)
+{
+	GVariant *result;
+	result = get_script_list();
+	moses_auth_exec_complete_list(object, invocation, result);
 	return TRUE;
 }
 
@@ -221,6 +316,7 @@ static gboolean register_interface(GDBusConnection *connection)
 	}
 	skeleton = moses_auth_exec_skeleton_new ();
 	g_signal_connect (skeleton, "handle-run", G_CALLBACK (handle_run), NULL);
+	g_signal_connect (skeleton, "handle-list", G_CALLBACK (handle_list), NULL);
 	if (!g_dbus_interface_skeleton_export (G_DBUS_INTERFACE_SKELETON (skeleton),
 				connection,
 				"/org/moses/AuthExec",

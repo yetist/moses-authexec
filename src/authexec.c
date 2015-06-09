@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <argp.h>
 
 #include <glib.h>
 #include <gio/gio.h>
@@ -33,62 +34,94 @@
 #define MOSES_DBUS_NAME "org.moses.AuthExec"
 #define MOSES_DBUS_PATH "/org/moses/AuthExec"
 
-static void usage (void)
+const char *argp_program_version = PACKAGE_STRING;
+const char *argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char doc[] =
+"\nRun script as other user.\n\n"
+"COMMAND:\n"
+"  run <SCRIPT>    Run script as other user.\n"
+"  list            List all scripts and allowed users.\n"
+"\nOPTIONS:";
+
+static char args_doc[] = "<COMMAND> [SCRIPT...]";
+
+static struct argp_option options[] = {
+	{"user",     'u', "root",  0, "Run script as user.(Default:root)"},
+	{ 0 }
+};
+
+struct arguments
 {
-    g_printerr ("Run 'authexec --help' to see a full list of available command line options.");
-    g_printerr ("\n");
+	char *command;
+	char *user;
+	char **scripts;
+};
+
+static error_t parse_opt (int key, char *arg, struct argp_state *state)
+{
+	struct arguments *arguments = state->input;
+
+	switch (key)
+	{
+		case 'u':
+			arguments->user = arg;
+			break;
+		case ARGP_KEY_NO_ARGS:
+			argp_usage (state);
+
+		case ARGP_KEY_ARG:
+			if (!(strcmp(arg, "run") == 0 || strcmp(arg, "list") == 0)) {
+				argp_usage (state);
+			}
+			arguments->command = arg;
+			arguments->scripts = &state->argv[state->next];
+			state->next = state->argc;
+			break;
+		default:
+			return ARGP_ERR_UNKNOWN;
+	}
+	return 0;
 }
 
-int main(int argc, char** argv)
+void parse_var(GVariant *dictionary)
 {
-	MosesAuthExec *authexec;
-	GError *error = NULL;
+	GVariantIter item;
+	GVariant *value;
+	gchar *key;
 
-    gint arg_index;
+	g_variant_iter_init (&item, dictionary);
+	while (g_variant_iter_loop (&item, "{sv}", &key, &value))
+	{
+		gchar *str;
+		GVariantIter *iter;
+		g_print("[%s]\nallow = ", key);
+		g_variant_get (value, "as", &iter);
+		while (g_variant_iter_loop (iter, "s", &str))
+			g_print ("%s;", str);
+		g_print("\n");
+		g_variant_iter_free (iter);
+		g_variant_unref(value);
+	}
+	g_free(key);
+}
+
+int main (int argc, char **argv)
+{
+
+	int i;
 	gint ret;
 	gchar *info;
-	gchar *username;
-	gchar *scriptname;
+	GVariant *result;
+	GError *error = NULL;
+	MosesAuthExec *authexec;
+	struct arguments arguments;
 
-    for (arg_index = 1; arg_index < argc; arg_index++)
-    {
-        gchar *arg = argv[arg_index];
+	struct argp argp = { options, parse_opt, args_doc, doc };
 
-        if (!g_str_has_prefix (arg, "-"))
-            break;
-      
-        if (strcmp (arg, "-h") == 0 || strcmp (arg, "--help") == 0)
-        {
-            g_printerr ("Usage:\n"
-                        "  authexec <USER> <SCRIPTNAME> - Run script as other user.\n"
-                        "\n"
-                        "Options:\n"
-                        "  -h, --help        Show help options\n"
-                        "  -v, --version     Show release version\n"
-                        "\n");
-            return EXIT_SUCCESS;
-        }
-        else if (strcmp (arg, "-v") == 0 || strcmp (arg, "--version") == 0)
-        {
-            g_printerr ("authexec %s\n", VERSION);
-            return EXIT_SUCCESS;
-        }
-        else
-        {
-            g_printerr ("Unknown option %s\n", arg);
-            usage ();
-            return EXIT_FAILURE;
-        }
-    }
+	arguments.command = "list";
+	arguments.user = "root";
 
-	if (argc - arg_index != 2) {
-		usage();
-		return EXIT_FAILURE;
-	}
-
-	username = argv[arg_index++];
-	scriptname = argv[arg_index];
-	
 	authexec = moses_auth_exec_proxy_new_for_bus_sync (
 			G_BUS_TYPE_SYSTEM,
 			G_DBUS_PROXY_FLAGS_NONE,
@@ -101,12 +134,29 @@ int main(int argc, char** argv)
 		g_error_free(error);
 		return EXIT_FAILURE;
 	}
-	moses_auth_exec_call_run_sync (authexec, username, scriptname, &ret, &info, NULL, &error);
-	if (error != NULL) {
-		g_printerr ("Unable to contact server: %s\n", error->message);
-		g_error_free(error);
-		return EXIT_FAILURE;
+
+	argp_parse (&argp, argc, argv, 0, 0, &arguments);
+
+	if (strcmp(arguments.command, "list") == 0) {
+		moses_auth_exec_call_list_sync (authexec, &result, NULL, &error);
+		if (error != NULL) {
+			g_printerr ("Unable to contact server: %s\n", error->message);
+			g_error_free(error);
+			return EXIT_FAILURE;
+		}
+		parse_var(result);
+		return EXIT_SUCCESS;
+	} else {
+		for (i = 0; arguments.scripts[i]; i++) {
+			moses_auth_exec_call_run_sync (authexec, arguments.user, arguments.scripts[i], &ret, &info, NULL, &error);
+			if (error != NULL) {
+				g_printerr ("Unable to contact server: %s\n", error->message);
+				g_error_free(error);
+				return EXIT_FAILURE;
+			}
+			g_printerr ("%s\n", info);
+			g_free(info);
+		}
 	}
-	g_printerr ("%s\n", info);
 	return ret;
 }

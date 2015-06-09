@@ -8,5 +8,8 @@
        <arg name="ret" type="i" direction="out"/>
        <arg name="info" type="s" direction="out"/>
     </method>
+    <method name="List">
+       <arg name="result" type="a{sv}" direction="out"/>
+    </method>
   </interface>
 </node>
