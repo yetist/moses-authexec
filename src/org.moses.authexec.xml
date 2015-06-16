@@ -3,8 +3,8 @@
 <node name="/">
   <interface name="org.moses.AuthExec">
     <method name="Run">
-       <arg name="username" type="s"/>
-       <arg name="scriptname" type="s"/>
+       <arg name="username" type="s" direction="in"/>
+       <arg name="scriptname" type="s" direction="in"/>
        <arg name="ret" type="i" direction="out"/>
        <arg name="info" type="s" direction="out"/>
     </method>

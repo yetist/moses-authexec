@@ -83,6 +83,34 @@ gchar** g_strv_cat(gchar **dest_array, gchar **src_array)
 	return dest_array;
 }
 
+#if !GLIB_CHECK_VERSION(2, 44, 0)
+/**
+ * g_strv_contains:
+ * @strv: a %NULL-terminated array of strings
+ * @str: a string
+ *
+ * Checks if @strv contains @str. @strv must not be %NULL.
+ *
+ * Returns: %TRUE if @str is an element of @strv, according to g_str_equal().
+ *
+ * Since: 2.44
+ */
+gboolean g_strv_contains (const gchar * const *strv,
+                 const gchar         *str)
+{
+  g_return_val_if_fail (strv != NULL, FALSE);
+  g_return_val_if_fail (str != NULL, FALSE);
+
+  for (; *strv != NULL; strv++)
+    {
+      if (g_str_equal (str, *strv))
+        return TRUE;
+    }
+
+  return FALSE;
+}
+#endif
+
 gint run_exec_script(const gchar* username, const gchar* scriptname, GError **error)
 {
 	struct passwd *user;
@@ -248,7 +276,6 @@ end:
 	g_strfreev(allows);
 	value = g_variant_new ("as", builder);
 	g_variant_builder_unref (builder);
-	g_print("%s\n", g_variant_print(value, TRUE));
 	return value;
 }
 
