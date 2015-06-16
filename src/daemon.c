@@ -368,6 +368,9 @@ static void on_bus_acquired (GDBusConnection *connection, const gchar *name, gpo
 int main(int argc, char *argv[])
 {
 	GMainLoop *loop;
+#if !GLIB_CHECK_VERSION(2, 36, 0)
+	g_type_init();
+#endif
 	loop = g_main_loop_new (NULL, FALSE);
 	g_bus_own_name (G_BUS_TYPE_SYSTEM,
 			MOSES_DBUS_NAME,

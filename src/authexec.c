@@ -121,6 +121,9 @@ int main (int argc, char **argv)
 
 	arguments.command = "list";
 	arguments.user = "root";
+#if !GLIB_CHECK_VERSION(2, 36, 0)
+	g_type_init();
+#endif
 
 	authexec = moses_auth_exec_proxy_new_for_bus_sync (
 			G_BUS_TYPE_SYSTEM,
