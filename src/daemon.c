@@ -190,6 +190,7 @@ gint run_exec_script(const gchar* username, const gchar* scriptname, GError **er
 	} else if (pid == 0) {
 		setreuid(user->pw_uid, 0);
 		setregid(user->pw_gid, 0);
+		chdir(user->pw_dir);
 		execl(scriptpath, scriptpath, NULL);
 	} else {
 		int status;
